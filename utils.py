@@ -114,8 +114,10 @@ class WordHMM:
         #         model = hmm.GaussianHMM(numStates, "diag") # initialize hmm model
 
         # Gaussian Mixture HMM
-        model = hmm.GMMHMM(n_components=self.nComp, n_mix=self.nMix, \
-                           transmat_prior=self.transmatPrior, startprob_prior=self.startprobPrior, \
+        #model = hmm.GMMHMM(n_components=self.nComp, n_mix=self.nMix,
+        #                   transmat_prior=self.transmatPrior, startprob_prior=self.startprobPrior,
+        #                   covariance_type=self.covarianceType, n_iter=self.n_iter)
+        model = hmm.GMMHMM(n_components=self.nComp, n_mix=self.nMix,
                            covariance_type=self.covarianceType, n_iter=self.n_iter)
         train = self.get_training_data()
 
@@ -140,6 +142,13 @@ class WordHMM:
             lengths.append(example.shape[0])
 
         model.fit(data_combined, lengths)
+        #####################
+        print('###### Start Prob ######')
+        print(model.startprob_)
+        print('###### Transmat Prob ######')
+        print(model.transmat_)
+        print('###### Transmat Prior Prob ######')
+        print(model.transmat_prior)
         self.wordhmm = model
 
         #model = GaussianHMM(n_components=2, n_iter=1000).fit(np.reshape(Q, [len(Q), 1]))

@@ -14,6 +14,7 @@ print(cwd)
 
 def load_training_data(training_data, category):
     os.chdir("..")
+    os.chdir("Training")
     os.chdir(category)
     for filename in os.listdir(os.getcwd()):
         if filename.endswith(".wav"):
@@ -24,7 +25,7 @@ def load_training_data(training_data, category):
 
 def load_all_training_data(training_data):
     load_training_data(training_data, "Play")
-    print("added play")
+    #print("added play")
     load_training_data(training_data, "Drake")
     print("added drake")
     load_training_data(training_data, "Kendrick")
@@ -49,9 +50,15 @@ def train_hmms(words, categories):
                 word_hmm.add_to_training_data(word.get_mfcc_matrix())
 
         # get hmm model
-        word_hmm.initModelParam(nComp=9, nMix=2, \
-                                        covarianceType='diag', n_iter=10, \
-                                        bakisLevel=2)
+        ### THIS KINDA WORKS
+        #word_hmm.initModelParam(nComp=11, nMix=2, \
+        #                                covarianceType='diag', n_iter=10, \
+        #                                bakisLevel=2)
+        word_hmm.initModelParam(nComp=5, nMix=2, \
+                                covarianceType='diag', n_iter=10, \
+                                bakisLevel=2)
+        print('###### Category ######')
+        print(word_hmm.get_category())
         word_hmm.getHmmModel()
 
     return word_hmms
@@ -100,10 +107,12 @@ print("Training the word HMMs")
 hip_hop_hmms = train_hmms(training_data, categories)
 print("Done training the word HMMs")
 
+"""
 for hmm in hip_hop_hmms:
     print(hmm.category)
     print(hmm.startprobPrior)
     print(hmm.transmatPrior)
+"""
 
 ### Step.3 Loading test data
 #print 'Step.3 Test data loading...',
@@ -121,10 +130,14 @@ testing_data.append(chanceTest)
 print('Step.4 Recognizing...')
 scores = list()
 for recognizer in hip_hop_hmms:
+    print(recognizer.get_category())
     print(sum(recognizer.get_start_prob_prior()))
     score = recognizer.wordhmm.score(chanceTest.get_mfcc_matrix())
     scores.append(score)
 
+for i in range(len(hip_hop_hmms)):
+    print(hip_hop_hmms[i].get_category())
+    print(scores[i])
 idx = scores.index(max(scores))
 predictCategoryId = hip_hop_hmms[idx].get_category()
 print(predictCategoryId)
