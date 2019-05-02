@@ -66,20 +66,15 @@ def train_hmms(words, categories):
         if word_hmm.get_category() == 'Drake':
             num_components = 4
 
-        #if word_hmm.get_category() == 'Wayne':
-        #    num_components = 2
-
-        if word_hmm.get_category() == 'Kendrick' or word_hmm.get_category() == 'Gambino':
+        if word_hmm.get_category() == 'Kendrick' or word_hmm.get_category() == 'Gambino'\
+                or word.get_category() == 'KendrickLamar':
             num_components = 6
 
         word_hmm.init_model_param(nComp=num_components, nMix=3, \
                                     covariance_type='diag', n_iter=10)
         word_hmm.get_hmm_model()
 
-        # Wayne was producing bad results, so added Lil Wayne Eamples and change class to be Wayne
-        # 2 Models for Wayne
-        if word_hmm.get_category() == 'LilWayne':
-            word_hmm.set_category('Wayne')
+        normalize_categories(word_hmm)
 
     return word_hmms
 
@@ -95,8 +90,12 @@ def init_categories():
     categories.append("Snoop")
     categories.append("Gambino")
     categories.append("Eminem")
+    categories.append("MacMiller")
+    categories.append("PostMalone")
+
+    # below categories added to improve performance
     categories.append("LilWayne")
-    #categories.append("Quiet")
+    categories.append("KendrickLamar")
 
     return categories
 
@@ -133,14 +132,27 @@ def get_classification_rate(actual_value_list, predicted_value_list):
 
     return float(num_correct)/length1
 
+
+def normalize_categories(artist):
+    # normalize categories for words that had multiple training labels
+    # Lil Wayne -> Wayne
+    # Kendrick Lamar -> Kendrick
+    # used to normalize both the HMM_category and the training / testing data categories
+
+    if artist.get_category() == 'LilWayne':
+        artist.set_category('Wayne')
+    if artist.get_category() == 'KendrickLamar':
+        artist.set_category('Kendrick')
+
+
 ######################################
 # AUDIO RECORD FUNCTIONS
 # https://stackoverflow.com/questions/892199/detect-record-audio-in-python
 ######################################
 THRESHOLD = 500  # audio levels not normalised.
 CHUNK_SIZE = 1024
-SILENT_CHUNKS = 69
-#SILENT_CHUNKS = 3 * 44100 / 1024  # about 3sec
+SILENT_CHUNKS = 70
+# SILENT_CHUNKS = 3 * 44100 / 1024  # about 3sec
 FORMAT = pyaudio.paInt16
 FRAME_MAX_VALUE = 2 ** 15 - 1
 NORMALIZE_MINUS_ONE_dB = 10 ** (-1.0 / 20)
@@ -234,48 +246,54 @@ def record_to_file(path):
     wave_file.writeframes(data)
     wave_file.close()
 
-# LOAD TRAIN DATA
-print("Loading training data")
-categories = init_categories()
-training_data = list()
-load_all_training_data(training_data, categories)
-print("Done loading training data")
 
-# TRAIN MODELS
-print("Training the word HMMs")
-hip_hop_hmms = train_hmms(training_data, categories)
-print("Done training the word HMMs")
+if __name__ == '__main__':
+    # LOAD TRAIN DATA
+    print("Loading training data")
+    categories = init_categories()
+    training_data = list()
+    load_all_training_data(training_data, categories)
+    print("Done loading training data")
 
-# LOAD TESTING DATA
-print('Loading Testing Data')
-testing_data = list()
-load_all_testing_data(testing_data, categories)
-print('Done Loading Testing Data')
+    # TRAIN MODELS
+    print("Training the word HMMs")
+    hip_hop_hmms = train_hmms(training_data, categories)
+    print("Done training the word HMMs")
 
-#Create true category labels for testing data
-true_category_list = list()
-for word in testing_data:
-    if word.get_category() == 'LilWayne':
-        word.set_category('Wayne')
-    true_category_list.append(word.get_category())
+    # LOAD TESTING DATA
+    print('Loading Testing Data')
+    testing_data = list()
+    load_all_testing_data(testing_data, categories)
+    print('Done Loading Testing Data')
 
-# PREDICT TESTING DATA
-print("Predicting Testing Data")
-prediction = predict(testing_data, hip_hop_hmms)
-print("Done Predicting Testing Data")
+    #Create true category labels for testing data
+    true_category_list = list()
+    for word in testing_data:
+        # normalize categories for words that had multiple training
+        normalize_categories(word)
+        #if word.get_category() == 'LilWayne':
+        #    word.set_category('Wayne')
+        #if word.get_category() == 'KendrickLamar':
+        #    word.set_category('Kendrick')
+        true_category_list.append(word.get_category())
 
-# present data so easy to see which examples are being marked incorrectly
-t = PrettyTable(['Example Number', 'Real Value', 'Predicted Value'])
-misclassified = PrettyTable(['Example Number', 'Real Value', 'Predicted Value'])
+    # PREDICT TESTING DATA
+    print("Predicting Testing Data")
+    prediction = predict(testing_data, hip_hop_hmms)
+    print("Done Predicting Testing Data")
 
-for i in range(len(testing_data)):
-    t.add_row([i+1, testing_data[i].get_category(), prediction[i]])
-    if testing_data[i].get_category() != prediction[i]:
-        misclassified.add_row([i+1, testing_data[i].get_category(), prediction[i]])
+    # present data so easy to see which examples are being marked incorrectly
+    t = PrettyTable(['Example Number', 'Real Value', 'Predicted Value'])
+    misclassified = PrettyTable(['Example Number', 'Real Value', 'Predicted Value'])
 
-print("Overall classification rate is {}".format(get_classification_rate(prediction, true_category_list)))
-print(t)
-print(misclassified)
+    for i in range(len(testing_data)):
+        t.add_row([i+1, testing_data[i].get_category(), prediction[i]])
+        if testing_data[i].get_category() != prediction[i]:
+            misclassified.add_row([i+1, testing_data[i].get_category(), prediction[i]])
+
+    print("Overall classification rate is {}".format(get_classification_rate(prediction, true_category_list)))
+    print(t)
+    print(misclassified)
 """
 demoList = list()
 for i in range(10):
