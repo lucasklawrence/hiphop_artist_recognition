@@ -28,35 +28,35 @@ def load_data(data, category):
     os.chdir("..")
 
 
-def load_all_training_data(training_data, categories):
+def load_all_training_data(training_data_list, category_labels):
     os.chdir("..//Training_Data")
-    for category in categories:
-        load_data(training_data, category)
+    for category in category_labels:
+        load_data(training_data_list, category)
 
 
-def load_all_testing_data(testing_data, categories):
+def load_all_testing_data(testing_data_list, category_labels):
     os.chdir("..//Testing_Data")
-    for category in categories:
-        load_data(testing_data, category)
+    for category in category_labels:
+        load_data(testing_data_list, category)
 
 ######################################
 # HMM FUNCTIONS
 ######################################
 
 
-def train_hmms(words, categories):
+def train_hmms(words, category_list):
     'Train the Hmm'
     word_hmms = list()
 
-    #create an HMM for each category
-    for category in categories:
-        W = WordHMM(category)
-        word_hmms.append(W)
+    # create an HMM for each category
+    for category in category_list:
+        w = WordHMM(category)
+        word_hmms.append(w)
 
     for word_hmm in word_hmms:
-        for word in words:
-            if word.get_category() == word_hmm.get_category():
-                word_hmm.add_to_training_data(word.get_mfcc_matrix())
+        for training_word in words:
+            if training_word.get_category() == word_hmm.get_category():
+                word_hmm.add_to_training_data(training_word.get_mfcc_matrix())
 
         # get hmm model
         num_components = 5
@@ -67,10 +67,10 @@ def train_hmms(words, categories):
             num_components = 4
 
         if word_hmm.get_category() == 'Kendrick' or word_hmm.get_category() == 'Gambino'\
-                or word.get_category() == 'KendrickLamar':
+                or word_hmm.get_category() == 'KendrickLamar':
             num_components = 6
 
-        word_hmm.init_model_param(nComp=num_components, nMix=3, \
+        word_hmm.init_model_param(n_hidden_states=num_components, n_mixtures=3,
                                     covariance_type='diag', n_iter=10)
         word_hmm.get_hmm_model()
 
@@ -80,35 +80,35 @@ def train_hmms(words, categories):
 
 
 def init_categories():
-    categories = list()
-    categories.append("Play")
-    categories.append("Drake")
-    categories.append("Kendrick")
-    categories.append("Chance")
-    categories.append("Kanye")
-    categories.append("Wayne")
-    categories.append("Snoop")
-    categories.append("Gambino")
-    categories.append("Eminem")
-    categories.append("MacMiller")
-    categories.append("PostMalone")
+    artist_categories = list()
+    artist_categories.append("Play")
+    artist_categories.append("Drake")
+    artist_categories.append("Kendrick")
+    artist_categories.append("Chance")
+    artist_categories.append("Kanye")
+    artist_categories.append("Wayne")
+    artist_categories.append("Snoop")
+    artist_categories.append("Gambino")
+    artist_categories.append("Eminem")
+    artist_categories.append("MacMiller")
+    artist_categories.append("PostMalone")
 
     # below categories added to improve performance
-    categories.append("LilWayne")
-    categories.append("KendrickLamar")
+    artist_categories.append("LilWayne")
+    artist_categories.append("KendrickLamar")
 
-    return categories
+    return artist_categories
 
 
 def predict(test_words, word_hmms):
     ''' recognition '''
     predicted_category_list = list()
 
-    for word in test_words:
+    for artist in test_words:
         scores = list()
 
         for recognizer in word_hmms:
-            score = recognizer.wordhmm.score(word.get_mfcc_matrix())
+            score = recognizer.wordhmm.score(artist.get_mfcc_matrix())
             scores.append(score)
 
         idx = scores.index(max(scores))
@@ -266,15 +266,11 @@ if __name__ == '__main__':
     load_all_testing_data(testing_data, categories)
     print('Done Loading Testing Data')
 
-    #Create true category labels for testing data
+    # Create true category labels for testing data
     true_category_list = list()
     for word in testing_data:
         # normalize categories for words that had multiple training
         normalize_categories(word)
-        #if word.get_category() == 'LilWayne':
-        #    word.set_category('Wayne')
-        #if word.get_category() == 'KendrickLamar':
-        #    word.set_category('Kendrick')
         true_category_list.append(word.get_category())
 
     # PREDICT TESTING DATA
