@@ -281,33 +281,13 @@ if __name__ == '__main__':
     print("Done Predicting Testing Data")
 
     # present data so easy to see which examples are being marked incorrectly
-    t = PrettyTable(['Example Number', 'Real Value', 'Predicted Value'])
     misclassified = PrettyTable(['Example Number', 'Real Value', 'Predicted Value'])
 
+    # add misclassified examples
     for i in range(len(testing_data)):
-        t.add_row([i+1, testing_data[i].get_category(), prediction[i]])
         if testing_data[i].get_category() != prediction[i]:
             misclassified.add_row([i+1, testing_data[i].get_category(), prediction[i]])
 
     print("Overall classification rate is {}".format(get_classification_rate(prediction, true_category_list)))
-    print(t)
     print(misclassified)
-"""
-demoList = list()
-for i in range(10):
-    print("please speak a word into the microphone")
-    filename = 'demo' + str(i) + '.wav'
-    record_to_file(filename)
-    print("done - result written to ", filename)
-    demo = Word('Test', filename)
-    demo.set_mfcc_matrix()
-    demoList.append(demo)
-    demoList2 = list()
-    demoList2.append(demo)
-    predicted_artist = predict(demoList2, hip_hop_hmms)
-    print("Predicted Artist", predicted_artist[0])
-
-predictedWords = predict(demoList, hip_hop_hmms)
-for i in range(10):
-    print("Predicted Word is: ", predictedWords[i])
-"""
+    
