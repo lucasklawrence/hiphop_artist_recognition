@@ -2,7 +2,7 @@
 
 This was a project I did for a pattern recognition class at University of Miami.
 
-I used HMMGMMs for a limited vocabulary of hip-hop artists and the word play.  The following is an example output when running the file artist_recognition.py
+I used HMMGMMs to recognize a limited vocabulary of hip-hop artists and the word play.  The following is an example output when running the file artist_recognition.py
 
 Loading training data  
 Done loading training data
