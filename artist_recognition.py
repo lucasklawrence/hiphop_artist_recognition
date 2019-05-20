@@ -256,17 +256,20 @@ if __name__ == '__main__':
     training_data = list()
     load_all_training_data(training_data, categories)
     print("Done loading training data")
+    print("\n")
 
     # TRAIN MODELS
     print("Training the word HMMs")
     hip_hop_hmms = train_hmms(training_data, categories)
     print("Done training the word HMMs")
+    print("\n")
 
     # LOAD TESTING DATA
     print('Loading Testing Data')
     testing_data = list()
     load_all_testing_data(testing_data, categories)
     print('Done Loading Testing Data')
+    print("\n")
 
     # Create true category labels for testing data
     true_category_list = list()
@@ -279,6 +282,7 @@ if __name__ == '__main__':
     print("Predicting Testing Data")
     prediction = predict(testing_data, hip_hop_hmms)
     print("Done Predicting Testing Data")
+    print("\n")
 
     # present data so easy to see which examples are being marked incorrectly
     misclassified = PrettyTable(['Example Number', 'Real Value', 'Predicted Value'])
@@ -289,5 +293,6 @@ if __name__ == '__main__':
             misclassified.add_row([i+1, testing_data[i].get_category(), prediction[i]])
 
     print("Overall classification rate is {}".format(get_classification_rate(prediction, true_category_list)))
+    print("\n")
+    print("The following table has the misclassified examples real and predicted values:\n")
     print(misclassified)
-    
