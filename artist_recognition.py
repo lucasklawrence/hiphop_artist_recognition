@@ -29,15 +29,17 @@ def load_data(data, category):
 
 
 def load_all_training_data(training_data_list, category_labels):
-    os.chdir("..//Training_Data")
+    os.chdir("Training_Data")
     for category in category_labels:
         load_data(training_data_list, category)
+    os.chdir("..")
 
 
 def load_all_testing_data(testing_data_list, category_labels):
-    os.chdir("..//Testing_Data")
+    os.chdir("Testing_Data")
     for category in category_labels:
         load_data(testing_data_list, category)
+    os.chdir("..")
 
 ######################################
 # HMM FUNCTIONS
